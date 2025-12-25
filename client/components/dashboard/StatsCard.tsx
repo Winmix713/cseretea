@@ -1,4 +1,5 @@
-import { LucideIcon, TrendingUp, Minus } from "lucide-react";
+import { useState } from "react";
+import { LucideIcon, TrendingUp, Minus, TrendingDown, X } from "lucide-react";
 
 interface StatsCardProps {
   title: string;
@@ -9,6 +10,12 @@ interface StatsCardProps {
   gradientId: string;
   themeColor: string;
   trend?: "up" | "down" | "stable";
+  details?: {
+    current: string;
+    average: string;
+    lastMatch: string;
+    insight: string;
+  };
 }
 
 export default function StatsCard({
@@ -20,11 +27,14 @@ export default function StatsCard({
   gradientId,
   themeColor,
   trend = "up",
+  details,
 }: StatsCardProps) {
+  const [showPopover, setShowPopover] = useState(false);
+
   const getTrendIcon = () => {
     switch (trend) {
       case "down":
-        return <Minus size={12} />;
+        return <TrendingDown size={12} />;
       case "stable":
         return <Minus size={12} />;
       default:
