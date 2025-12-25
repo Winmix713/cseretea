@@ -1,10 +1,24 @@
 import { useState } from "react";
-import { Search, Bell, Settings, Shield, HelpCircle, LogOut, Upload, FileUp, X, CheckCircle, Loader2 } from "lucide-react";
+import {
+  Search,
+  Bell,
+  Settings,
+  Shield,
+  HelpCircle,
+  LogOut,
+  Upload,
+  FileUp,
+  X,
+  CheckCircle,
+  Loader2,
+} from "lucide-react";
 
 export default function Header() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
+  const [uploadStatus, setUploadStatus] = useState<
+    "idle" | "uploading" | "success" | "error"
+  >("idle");
   const [isDragging, setIsDragging] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
@@ -64,8 +78,13 @@ export default function Header() {
         {/* CSV Upload Button */}
         <div className="hidden md:block relative group">
           <button className="flex items-center gap-2 px-3 py-2 rounded-xl border border-dashed border-zinc-700 bg-white/[0.02] hover:bg-[#bef264]/5 hover:border-[#bef264]/40 transition-all">
-            <Upload size={16} className="text-zinc-500 group-hover:text-[#bef264]" />
-            <span className="text-xs font-medium text-zinc-400 group-hover:text-[#bef264]">Import Data</span>
+            <Upload
+              size={16}
+              className="text-zinc-500 group-hover:text-[#bef264]"
+            />
+            <span className="text-xs font-medium text-zinc-400 group-hover:text-[#bef264]">
+              Import Data
+            </span>
           </button>
 
           {/* Dropdown Menu */}
@@ -92,7 +111,9 @@ export default function Header() {
                     <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto mb-3">
                       <CheckCircle size={24} />
                     </div>
-                    <p className="text-sm font-medium text-white">Upload Complete</p>
+                    <p className="text-sm font-medium text-white">
+                      Upload Complete
+                    </p>
                   </div>
                 ) : (
                   <div
@@ -139,7 +160,9 @@ export default function Header() {
                       ) : (
                         <div>
                           <p className="text-sm text-zinc-300">Drag CSV here</p>
-                          <p className="text-xs text-zinc-600">or click to browse</p>
+                          <p className="text-xs text-zinc-600">
+                            or click to browse
+                          </p>
                         </div>
                       )}
                     </div>

@@ -62,7 +62,7 @@ interface LeagueTableProps {
 
 const LeagueTable: React.FC<LeagueTableProps> = ({ teams = [] }) => {
   const [activeTab, setActiveTab] = useState<"table" | "scorers" | "form">(
-    "table"
+    "table",
   );
 
   const defaultTeams: LeagueTeam[] = [

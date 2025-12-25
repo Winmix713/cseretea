@@ -126,12 +126,13 @@ const BttsChart: React.FC<BttsChartProps> = ({ data = [] }) => {
         </div>
         <div className="flex items-center gap-2">
           <div
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold uppercase tracking-wide ${trend === "up"
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold uppercase tracking-wide ${
+              trend === "up"
                 ? "bg-[#BEF264]/5 border-[#BEF264]/20 text-[#BEF264]"
                 : trend === "down"
                   ? "bg-rose-500/5 border-rose-500/20 text-rose-500"
                   : "bg-zinc-800/50 border-white/10 text-zinc-400"
-              }`}
+            }`}
           >
             {trend === "up" ? (
               <TrendingUp className="w-3.5 h-3.5" />

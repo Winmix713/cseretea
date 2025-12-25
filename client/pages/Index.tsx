@@ -47,7 +47,8 @@ export default function Index() {
                 current: "64%",
                 average: "52%",
                 lastMatch: "68%",
-                insight: "Team is controlling the match with above-average possession",
+                insight:
+                  "Team is controlling the match with above-average possession",
               }}
             />
           </article>
@@ -67,7 +68,8 @@ export default function Index() {
                 current: "2.42",
                 average: "1.62",
                 lastMatch: "2.85",
-                insight: "Creating high-quality chances with strong finishing potential",
+                insight:
+                  "Creating high-quality chances with strong finishing potential",
               }}
             />
           </article>
@@ -87,7 +89,8 @@ export default function Index() {
                 current: "91%",
                 average: "85%",
                 lastMatch: "89%",
-                insight: "Excellent passing accuracy indicates strong team coordination",
+                insight:
+                  "Excellent passing accuracy indicates strong team coordination",
               }}
             />
           </article>
@@ -107,7 +110,8 @@ export default function Index() {
                 current: "18",
                 average: "16",
                 lastMatch: "22",
-                insight: "Slightly fewer shots but maintaining good accuracy on target",
+                insight:
+                  "Slightly fewer shots but maintaining good accuracy on target",
               }}
             />
           </article>

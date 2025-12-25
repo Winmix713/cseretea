@@ -32,20 +32,23 @@ export default function MatchPicker() {
       id: i + 1,
       home: "",
       away: "",
-    }))
+    })),
   );
 
   const completedMatches = useMemo(
     () => matches.filter((m) => m.home && m.away).length,
-    [matches]
+    [matches],
   );
   const fillPercentage = (completedMatches / 8) * 100;
 
-  const updateMatch = useCallback((id: number, field: "home" | "away", value: string) => {
-    setMatches((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, [field]: value } : m))
-    );
-  }, []);
+  const updateMatch = useCallback(
+    (id: number, field: "home" | "away", value: string) => {
+      setMatches((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, [field]: value } : m)),
+      );
+    },
+    [],
+  );
 
   const resetMatches = useCallback(() => {
     setMatches(
@@ -53,7 +56,7 @@ export default function MatchPicker() {
         id: i + 1,
         home: "",
         away: "",
-      }))
+      })),
     );
   }, []);
 
@@ -62,7 +65,7 @@ export default function MatchPicker() {
       const match = matches.find((m) => m.id === matchId);
       return match ? [match.home, match.away].filter(Boolean) : [];
     },
-    [matches]
+    [matches],
   );
 
   return (
@@ -80,7 +83,10 @@ export default function MatchPicker() {
         <header className="relative z-10 flex h-16 items-center justify-between border-b border-white/5 bg-[#090a0b]/80 px-4 backdrop-blur-md md:h-20 md:px-6">
           <div className="flex items-center gap-4">
             <div>
-              <h2 id="match-picker-heading" className="text-base font-semibold tracking-tight text-white md:text-lg">
+              <h2
+                id="match-picker-heading"
+                className="text-base font-semibold tracking-tight text-white md:text-lg"
+              >
                 Forduló <span className="text-[#bef264]">Kiválasztása</span>
               </h2>
               <p className="mt-1 hidden text-xs tracking-tight text-zinc-500 md:block">
@@ -255,7 +261,7 @@ export default function MatchPicker() {
                 aria-label="Clear all selections"
                 onClick={() => {
                   setMatches(
-                    matches.map((m) => ({ ...m, home: "", away: "" }))
+                    matches.map((m) => ({ ...m, home: "", away: "" })),
                   );
                 }}
               >
