@@ -1,78 +1,265 @@
-import { Minus } from "lucide-react";
+import React, { useMemo, useState, useRef } from "react";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
-export default function BTTSChart() {
+export interface BTTSData {
+  matchId: string;
+  bttsCount: number; // vagy date, value, stb.
+  date?: string;
+}
+
+interface BttsChartProps {
+  data: BTTSData[];
+}
+
+const BttsChart: React.FC<BttsChartProps> = ({ data = [] }) => {
+  const [hoverData, setHoverData] = useState<{
+    x: number;
+    y: number;
+    value: number;
+    index: number;
+  } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Méretek
+  const width = 100;
+  const height = 40;
+
+  // Bezier görbe generáló logika (Smooth Line)
+  const getPath = (points: { x: number; y: number }[]) => {
+    if (points.length === 0) return "";
+    let d = `M ${points[0].x},${points[0].y}`;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = i > 0 ? points[i - 1] : points[0];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = i !== points.length - 2 ? points[i + 2] : p2;
+
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+    }
+    return d;
+  };
+
+  // Adatok feldolgozása
+  const { pathString, areaPath, points, trend } = useMemo(() => {
+    if (!data || !data.length)
+      return { pathString: "", areaPath: "", points: [], trend: "neutral" };
+
+    const maxVal = Math.max(...data.map((d) => d.bttsCount), 1);
+    const minVal = 0; // Fix bázis a 0-hoz
+
+    // Pontok normalizálása
+    const normalizedPoints = data.map((d, i) => ({
+      x: (i / (data.length - 1)) * width,
+      y:
+        height -
+        ((d.bttsCount - minVal) / (maxVal - minVal)) * (height * 0.7) -
+        5,
+      value: d.bttsCount,
+      originalIndex: i,
+    }));
+
+    const line = getPath(normalizedPoints);
+    const area = `${line} L ${width},${height} L 0,${height} Z`;
+
+    // Trend számítás (utolsó 5 elem átlaga vs első 5)
+    const recent =
+      data.slice(-5).reduce((acc, c) => acc + c.bttsCount, 0) /
+      Math.min(5, data.length);
+    const prev =
+      data.slice(0, 5).reduce((acc, c) => acc + c.bttsCount, 0) /
+      Math.min(5, data.length);
+    const trendDir =
+      recent > prev * 1.05 ? "up" : recent < prev * 0.95 ? "down" : "neutral";
+
+    return {
+      pathString: line,
+      areaPath: area,
+      points: normalizedPoints,
+      trend: trendDir,
+    };
+  }, [data]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current || !points.length) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const relX = (x / rect.width) * width; // Skálázás SVG koordinátákra
+
+    const closest = points.reduce((prev, curr) =>
+      Math.abs(curr.x - relX) < Math.abs(prev.x - relX) ? curr : prev,
+    );
+
+    setHoverData({ ...closest, index: closest.originalIndex });
+  };
+
+  if (!data.length) {
+    return (
+      <div className="glass-card h-full flex items-center justify-center text-zinc-500 text-xs">
+        No Data Available
+      </div>
+    );
+  }
+
   return (
-    <article className="h-[520px] xl:col-span-8">
-      <div className="glass-card group relative flex h-full flex-col overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+    <div className="glass-card flex flex-col h-full relative group overflow-hidden">
+      {/* Background Grid Accent */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
-        <header className="relative z-10 flex items-start justify-between p-6 md:p-8">
-          <div>
-            <h3 className="flex items-center gap-2 text-lg font-bold text-white">
-              BTTS Momentum
-              <span className="font-mono text-[10px] tracking-wide rounded border border-white/10 bg-white/5 px-2 py-0.5 text-zinc-400">
-                Last 30
-              </span>
-            </h3>
-            <p className="mt-1 max-w-md text-xs text-zinc-500">
-              Both Teams To Score frequency analysis using smoothed goal data points.
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-zinc-800/50 px-3 py-1.5 text-xs font-bold uppercase tracking-wide text-zinc-400">
-              <Minus size={14} />
-              <span>Stable</span>
-            </div>
-          </div>
-        </header>
-
-        <div className="relative z-10 flex-1 cursor-crosshair px-2 pb-4">
-          {/* Complex Chart SVG */}
-          <svg
-            viewBox="0 0 100 40"
-            className="h-full w-full overflow-visible drop-shadow-[0_0_10px_rgba(190,242,100,0.15)] filter"
-            preserveAspectRatio="none"
+      {/* Header */}
+      <div className="p-6 md:p-8 relative z-10 flex justify-between items-start">
+        <div>
+          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+            BTTS Momentum
+            <span className="px-2 py-0.5 rounded text-[10px] bg-white/5 border border-white/10 text-zinc-400 font-mono">
+              Last {data.length}
+            </span>
+          </h3>
+          <p className="text-xs text-zinc-500 mt-1 max-w-md">
+            Both Teams To Score frequency analysis using smoothed goal data
+            points.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-bold uppercase tracking-wide ${trend === "up"
+                ? "bg-[#BEF264]/5 border-[#BEF264]/20 text-[#BEF264]"
+                : trend === "down"
+                  ? "bg-rose-500/5 border-rose-500/20 text-rose-500"
+                  : "bg-zinc-800/50 border-white/10 text-zinc-400"
+              }`}
           >
-            <defs>
-              <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#bef264" stopOpacity="0.3"></stop>
-                <stop offset="50%" stopColor="#bef264" stopOpacity="0.05"></stop>
-                <stop offset="100%" stopColor="#bef264" stopOpacity="0"></stop>
-              </linearGradient>
-            </defs>
-
-            {/* Grid line */}
-            <line
-              x1="0"
-              y1="20"
-              x2="100"
-              y2="20"
-              stroke="white"
-              strokeOpacity="0.05"
-              strokeWidth="0.5"
-              strokeDasharray="2 2"
-            ></line>
-
-            {/* Filled area under curve */}
-            <path
-              d="M 0,7 C 0.57,8.16 2.29,11.08 3.44,14 C 4.59,16.91 5.74,23.33 6.89,24.5 C 8.04,25.66 9.19,23.33 10.34,21 C 11.49,18.66 12.64,10.5 13.79,10.5 C 14.94,10.5 16.09,18.66 17.24,21 C 18.39,23.33 19.54,23.33 20.68,24.5 C 21.83,25.66 22.98,26.83 24.13,28 C 25.28,29.16 26.43,32.66 27.58,31.5 C 28.73,30.33 29.88,23.33 31.03,21 C 32.18,18.66 33.33,16.91 34.48,17.5 C 35.63,18.08 36.78,25.66 37.93,24.5 C 39.08,23.33 40.22,11.08 41.37,10.5 C 42.52,9.91 43.67,20.41 44.82,21 C 45.97,21.58 47.12,12.25 48.27,14 C 49.42,15.75 50.57,30.33 51.72,31.5 C 52.87,32.66 54.02,20.41 55.17,21 C 56.32,21.58 57.47,36.16 58.62,35 C 59.77,33.83 60.91,15.16 62.06,14 C 63.21,12.83 64.36,28 65.51,28 C 66.66,28 67.81,14 68.96,14 C 70.11,14 71.26,29.16 72.41,28 C 73.56,26.83 74.71,7 75.86,7 C 77.01,7 78.16,23.33 79.31,28 C 80.45,32.66 81.60,37.91 82.75,35 C 83.90,32.08 85.05,12.83 86.20,10.5 C 87.35,8.16 88.50,20.41 89.65,21 C 90.80,21.58 91.95,16.33 93.10,14 C 94.25,11.66 95.40,5.25 96.55,7 C 97.70,8.75 99.42,21.58 100,24.5 L 100,40 L 0,40 Z"
-              fill="url(#chartFill)"
-              vectorEffect="non-scaling-stroke"
-            ></path>
-
-            {/* Line path */}
-            <path
-              d="M 0,7 C 0.57,8.16 2.29,11.08 3.44,14 C 4.59,16.91 5.74,23.33 6.89,24.5 C 8.04,25.66 9.19,23.33 10.34,21 C 11.49,18.66 12.64,10.5 13.79,10.5 C 14.94,10.5 16.09,18.66 17.24,21 C 18.39,23.33 19.54,23.33 20.68,24.5 C 21.83,25.66 22.98,26.83 24.13,28 C 25.28,29.16 26.43,32.66 27.58,31.5 C 28.73,30.33 29.88,23.33 31.03,21 C 32.18,18.66 33.33,16.91 34.48,17.5 C 35.63,18.08 36.78,25.66 37.93,24.5 C 39.08,23.33 40.22,11.08 41.37,10.5 C 42.52,9.91 43.67,20.41 44.82,21 C 45.97,21.58 47.12,12.25 48.27,14 C 49.42,15.75 50.57,30.33 51.72,31.5 C 52.87,32.66 54.02,20.41 55.17,21 C 56.32,21.58 57.47,36.16 58.62,35 C 59.77,33.83 60.91,15.16 62.06,14 C 63.21,12.83 64.36,28 65.51,28 C 66.66,28 67.81,14 68.96,14 C 70.11,14 71.26,29.16 72.41,28 C 73.56,26.83 74.71,7 75.86,7 C 77.01,7 78.16,23.33 79.31,28 C 80.45,32.66 81.60,37.91 82.75,35 C 83.90,32.08 85.05,12.83 86.20,10.5 C 87.35,8.16 88.50,20.41 89.65,21 C 90.80,21.58 91.95,16.33 93.10,14 C 94.25,11.66 95.40,5.25 96.55,7 C 97.70,8.75 99.42,21.58 100,24.5"
-              fill="none"
-              stroke="#bef264"
-              strokeWidth="1"
-              strokeLinecap="round"
-              className="transition-all duration-300"
-              vectorEffect="non-scaling-stroke"
-            ></path>
-          </svg>
+            {trend === "up" ? (
+              <TrendingUp className="w-3.5 h-3.5" />
+            ) : trend === "down" ? (
+              <TrendingDown className="w-3.5 h-3.5" />
+            ) : (
+              <Minus className="w-3.5 h-3.5" />
+            )}
+            <span>
+              {trend === "up"
+                ? "High Trend"
+                : trend === "down"
+                  ? "Cooling"
+                  : "Stable"}
+            </span>
+          </div>
         </div>
       </div>
-    </article>
+
+      {/* Chart Container */}
+      <div
+        ref={containerRef}
+        className="flex-1 w-full relative z-10 cursor-crosshair px-2 pb-4"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => setHoverData(null)}
+      >
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="w-full h-full overflow-visible filter drop-shadow-[0_0_10px_rgba(190,242,100,0.15)]"
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#BEF264" stopOpacity="0.3" />
+              <stop offset="50%" stopColor="#BEF264" stopOpacity="0.05" />
+              <stop offset="100%" stopColor="#BEF264" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+
+          {/* Reference Lines */}
+          <line
+            x1="0"
+            y1={height * 0.5}
+            x2={width}
+            y2={height * 0.5}
+            stroke="white"
+            strokeOpacity="0.05"
+            strokeWidth="0.5"
+            strokeDasharray="2 2"
+          />
+
+          {/* Area & Line */}
+          <path
+            d={areaPath}
+            fill="url(#chartFill)"
+            vectorEffect="non-scaling-stroke"
+          />
+          <path
+            d={pathString}
+            fill="none"
+            stroke="#BEF264"
+            strokeWidth="1"
+            strokeLinecap="round"
+            className="transition-all duration-300"
+            vectorEffect="non-scaling-stroke"
+          />
+
+          {/* Interactive Tooltip (Native SVG) */}
+          {hoverData && (
+            <g>
+              <line
+                x1={hoverData.x}
+                y1="0"
+                x2={hoverData.x}
+                y2={height}
+                stroke="white"
+                strokeOpacity="0.2"
+                strokeWidth="0.5"
+                strokeDasharray="1 1"
+                vectorEffect="non-scaling-stroke"
+              />
+              <circle
+                cx={hoverData.x}
+                cy={hoverData.y}
+                r="1.5"
+                fill="#BEF264"
+                className="animate-pulse"
+                vectorEffect="non-scaling-stroke"
+              />
+              <circle
+                cx={hoverData.x}
+                cy={hoverData.y}
+                r="0.8"
+                fill="white"
+                vectorEffect="non-scaling-stroke"
+              />
+
+              {/* Tooltip Label logic: avoid overflow on right side */}
+              <g
+                transform={`translate(${hoverData.x > width - 20 ? hoverData.x - 25 : hoverData.x + 2}, 0)`}
+              >
+                <rect
+                  width="24"
+                  height="12"
+                  rx="2"
+                  fill="#09090b"
+                  stroke="rgba(255,255,255,0.1)"
+                  strokeWidth="0.5"
+                  fillOpacity="0.9"
+                />
+                <text
+                  x="12"
+                  y="8"
+                  textAnchor="middle"
+                  fontSize="5"
+                  fill="white"
+                  fontFamily="monospace"
+                  fontWeight="bold"
+                >
+                  {hoverData.value}
+                </text>
+              </g>
+            </g>
+          )}
+        </svg>
+      </div>
+    </div>
   );
-}
+};
+
+export default BttsChart;
