@@ -135,6 +135,96 @@ export default function StatsCard({
           </span>
         </div>
       </div>
+
+      {/* Popover Details */}
+      {showPopover && details && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowPopover(false)}
+          />
+
+          {/* Popover Content */}
+          <div className="glass-card relative w-full max-w-sm p-5 border border-white/10 shadow-2xl">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: themeColor }}
+                ></span>
+                {title} Analysis
+              </h3>
+              <button
+                onClick={() => setShowPopover(false)}
+                className="text-zinc-500 hover:text-white"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Data Grid */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-2.5 rounded-lg bg-zinc-900/50 border border-white/5">
+                  <div className="flex items-center gap-1.5 mb-1 text-zinc-500 text-[10px] uppercase font-bold">
+                    Current
+                  </div>
+                  <div className="text-lg font-mono font-bold text-white">
+                    {details.current}
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-lg bg-zinc-900/50 border border-white/5">
+                  <div className="flex items-center gap-1.5 mb-1 text-zinc-500 text-[10px] uppercase font-bold">
+                    Avg
+                  </div>
+                  <div className="text-lg font-mono font-bold text-zinc-300">
+                    {details.average}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-white/5">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-zinc-500">Last Match</span>
+                  <span className="font-mono text-white">{details.lastMatch}</span>
+                </div>
+
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-zinc-500">Trend Direction</span>
+                  <span
+                    className="font-bold bg-opacity-10 px-1.5 py-0.5 rounded"
+                    style={{
+                      color: themeColor,
+                      backgroundColor: `${themeColor}20`,
+                    }}
+                  >
+                    {trend.toUpperCase()}
+                  </span>
+                </div>
+              </div>
+
+              {/* Insight Box */}
+              <div
+                className="p-3 rounded-lg border-l-2"
+                style={{
+                  borderLeftColor: themeColor,
+                  backgroundColor: "rgba(0, 0, 0, 0.2)",
+                }}
+              >
+                <p className="text-[11px] text-zinc-400 leading-relaxed font-medium">
+                  <span className="text-white font-bold block mb-0.5 text-[10px] uppercase opacity-70">
+                    AI Insight
+                  </span>
+                  {details.insight}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </article>
   );
 }
