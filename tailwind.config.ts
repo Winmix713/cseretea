@@ -57,6 +57,10 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        /* Named colors for WinMix theme */
+        lime: {
+          accent: "#bef264",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
