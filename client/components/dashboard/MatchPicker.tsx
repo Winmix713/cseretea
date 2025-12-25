@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { X, Sparkles } from "lucide-react";
 
 interface Match {
@@ -6,6 +6,25 @@ interface Match {
   home: string;
   away: string;
 }
+
+const SAMPLE_TEAMS = [
+  "Liverpool",
+  "Man City",
+  "Arsenal",
+  "Chelsea",
+  "Man United",
+  "Newcastle",
+  "Brighton",
+  "Tottenham",
+  "Aston Villa",
+  "West Ham",
+  "Fulham",
+  "Brentford",
+  "Crystal Palace",
+  "Everton",
+  "Leicester",
+  "Wolverhampton",
+];
 
 export default function MatchPicker() {
   const [matches, setMatches] = useState<Match[]>(
@@ -16,8 +35,35 @@ export default function MatchPicker() {
     }))
   );
 
-  const completedMatches = matches.filter((m) => m.home && m.away).length;
+  const completedMatches = useMemo(
+    () => matches.filter((m) => m.home && m.away).length,
+    [matches]
+  );
   const fillPercentage = (completedMatches / 8) * 100;
+
+  const updateMatch = useCallback((id: number, field: "home" | "away", value: string) => {
+    setMatches((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, [field]: value } : m))
+    );
+  }, []);
+
+  const resetMatches = useCallback(() => {
+    setMatches(
+      Array.from({ length: 8 }, (_, i) => ({
+        id: i + 1,
+        home: "",
+        away: "",
+      }))
+    );
+  }, []);
+
+  const getExcludedTeams = useCallback(
+    (matchId: number) => {
+      const match = matches.find((m) => m.id === matchId);
+      return match ? [match.home, match.away].filter(Boolean) : [];
+    },
+    [matches]
+  );
 
   return (
     <section
