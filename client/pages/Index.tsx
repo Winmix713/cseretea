@@ -1,62 +1,89 @@
-import { DemoResponse } from "@shared/api";
-import { useEffect, useState } from "react";
+import Layout from "@/components/Layout";
+import MatchPicker from "@/components/dashboard/MatchPicker";
+import StatsCard from "@/components/dashboard/StatsCard";
+import BTTSChart from "@/components/dashboard/BTTSChart";
+import LeagueTable from "@/components/dashboard/LeagueTable";
+import { Activity, Target, Zap, BarChart2 } from "lucide-react";
 
 export default function Index() {
-  const [exampleFromServer, setExampleFromServer] = useState("");
-  // Fetch users on component mount
-  useEffect(() => {
-    fetchDemo();
-  }, []);
-
-  // Example of how to fetch data from the server (if needed)
-  const fetchDemo = async () => {
-    try {
-      const response = await fetch("/api/demo");
-      const data = (await response.json()) as DemoResponse;
-      setExampleFromServer(data.message);
-    } catch (error) {
-      console.error("Error fetching hello:", error);
-    }
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200">
-      <div className="text-center">
-        {/* TODO: FUSION_GENERATION_APP_PLACEHOLDER replace everything here with the actual app! */}
-        <h1 className="text-2xl font-semibold text-slate-800 flex items-center justify-center gap-3">
-          <svg
-            className="animate-spin h-8 w-8 text-slate-400"
-            viewBox="0 0 50 50"
-          >
-            <circle
-              className="opacity-30"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
+    <Layout>
+      <div className="mx-auto max-w-[1920px] space-y-8 p-4 pb-24 md:p-6 lg:p-8">
+        {/* SECTION 1: Match Picker */}
+        <MatchPicker />
+
+        {/* SECTION 2: Stats & Details */}
+        <section
+          className="auto-rows-[minmax(0,auto)] grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-12 gap-x-6 gap-y-6"
+          aria-labelledby="stats-details-heading"
+        >
+          <h2 id="stats-details-heading" className="sr-only">
+            Statistics and Details
+          </h2>
+
+          {/* CARD 1: Possession */}
+          <article className="h-full xl:col-span-3 md:col-span-1">
+            <StatsCard
+              title="Possession"
+              value="64"
+              icon={Activity}
+              percentage={64}
+              trendText="Dominating Midfield"
+              gradientId="grad-possession-card"
+              themeColor="#fbbf24"
+              trend="up"
             />
-            <circle
-              className="text-slate-600"
-              cx="25"
-              cy="25"
-              r="20"
-              stroke="currentColor"
-              strokeWidth="5"
-              fill="none"
-              strokeDasharray="100"
-              strokeDashoffset="75"
+          </article>
+
+          {/* CARD 2: Expected Goals (xG) */}
+          <article className="h-full xl:col-span-3 md:col-span-1">
+            <StatsCard
+              title="Expected Goals (xG)"
+              value="2.42"
+              icon={Target}
+              percentage={82}
+              trendText="+0.8 vs Avg"
+              gradientId="grad-xg-card"
+              themeColor="#bef264"
+              trend="up"
             />
-          </svg>
-          Generating your app...
-        </h1>
-        <p className="mt-4 text-slate-600 max-w-md">
-          Watch the chat on the left for updates that might need your attention
-          to finish generating
-        </p>
-        <p className="mt-4 hidden max-w-md">{exampleFromServer}</p>
+          </article>
+
+          {/* CARD 3: Pass Accuracy */}
+          <article className="h-full xl:col-span-3 md:col-span-1">
+            <StatsCard
+              title="Pass Accuracy"
+              value="91"
+              icon={Zap}
+              percentage={91}
+              trendText="428 Completed"
+              gradientId="grad-pass-accuracy-card"
+              themeColor="#bef264"
+              trend="up"
+            />
+          </article>
+
+          {/* CARD 4: Total Shots */}
+          <article className="h-full xl:col-span-3 md:col-span-1">
+            <StatsCard
+              title="Total Shots"
+              value="18"
+              icon={BarChart2}
+              percentage={45}
+              trendText="6 On Target"
+              gradientId="grad-total-shots-card"
+              themeColor="#fbbf24"
+              trend="down"
+            />
+          </article>
+
+          {/* BIG CHART: BTTS Momentum */}
+          <BTTSChart />
+
+          {/* TABLE: Premier League */}
+          <LeagueTable />
+        </section>
       </div>
-    </div>
+    </Layout>
   );
 }
