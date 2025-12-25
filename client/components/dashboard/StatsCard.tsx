@@ -54,10 +54,11 @@ export default function StatsCard({
   };
 
   return (
-    <article className="h-full">
+    <article className="h-full relative">
       <div
-        className="glass-card group relative flex h-full flex-col overflow-hidden p-6 transition-all duration-500 hover:border-white/20"
+        className="glass-card group relative flex h-full flex-col overflow-hidden p-6 transition-all duration-500 hover:border-white/20 cursor-pointer"
         style={{ "--theme-color": themeColor } as React.CSSProperties}
+        onClick={() => details && setShowPopover(!showPopover)}
       >
         <div className="pointer-events-none absolute bottom-0 right-0 h-32 w-full mix-blend-screen opacity-[0.15] transition-opacity duration-500 group-hover:opacity-[0.25]">
           {/* Chart SVG background for visual effect */}
